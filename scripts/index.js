@@ -85,7 +85,6 @@ db.update('version', {
   minor: 4,
   patch: 0,
 })
-db.save()
 
 // !RPC
 const solana = new Connection(rpcUrl)
@@ -94,90 +93,90 @@ const solscan = new SolScan()
 
 // !Main Method
 async function main() {
-  // // Start log stopwatch
-  // startStopwatch()
+  // Start log stopwatch
+  startStopwatch()
 
-  // // Make an inital request for total token count.
-  // const data = await solscan.getSfts(0, 0)
+  // Make an inital request for total token count.
+  const data = await solscan.getSfts(0, 0)
 
-  // // If request is not "succcess" then that is probably not good.
-  // if (!data.succcess)
-  //   throw new Error('Program Failed : Initial request success status negated.')
-  // // Assign total tokens to variable
-  // const tokenAmt = data.data.total
+  // If request is not "succcess" then that is probably not good.
+  if (!data.succcess)
+    throw new Error('Program Failed : Initial request success status negated.')
+  // Assign total tokens to variable
+  const tokenAmt = data.data.total
 
-  // // Push current data into map to ensure we only append and mutate
-  // /**
-  //  * @type {Map<string, import('./types').TokenListToken>}
-  //  */
-  // const tokens = new Map(
-  //   (db.get('tokens') ?? [])
-  //     .map((i) => ([i.address, i]))
-  // )
+  // Push current data into map to ensure we only append and mutate
+  /**
+   * @type {Map<string, import('./types').TokenListToken>}
+   */
+  const tokens = new Map(
+    (db.get('tokens') ?? [])
+      .map((i) => ([i.address, i]))
+  )
 
-  // // While tokens collected len is less than total amount we keep requesting.
-  // while (tokens.size < tokenAmt) {
-  //   // Log current fetch progress.
-  //   const padding = pad(tokens.size, tokenAmt)
-  //   console.log(`Fetch Progress | ${padding}${tokens.size}/${tokenAmt}`)
-  //              //NeLegacy Check 
-  //   // Make request using current collected tokens as offset.
-  //   const res = await solscan.getSfts(tokens.size)
+  // While tokens collected len is less than total amount we keep requesting.
+  while (tokens.size < tokenAmt) {
+    // Log current fetch progress.
+    const padding = pad(tokens.size, tokenAmt)
+    console.log(`Fetch Progress | ${padding}${tokens.size}/${tokenAmt}`)
+               //NeLegacy Check 
+    // Make request using current collected tokens as offset.
+    const res = await solscan.getSfts(tokens.size)
 
-  //   // Once again if not "succcess" assuming not good.
-  //   if (!data.succcess)
-  //     throw new Error(`Program Failed : request offset ${
-  //       tokens.size
-  //     } success status negated.`)
+    // Once again if not "succcess" assuming not good.
+    if (!data.succcess)
+      throw new Error(`Program Failed : request offset ${
+        tokens.size
+      } success status negated.`)
 
-  //   // Push tokens to total collection.
-  //   await asyncForEach(res.data.tokens, async (v, i) => {
-  //     const padding = pad(i, res.data.tokens.length)
-  //     // If this data is not present we have no reason to store it
-  //     if (!v.decimals && !v.tokenName && !v.tokenSymbol && !v.icon)
-  //       return console.log(`NeLegacy Check | ${padding}${i}/${res.data.tokens.length} | No Metadata. Skipping.`)
+    // Push tokens to total collection.
+    await asyncForEach(res.data.tokens, async (v, i) => {
+      const padding = pad(i, res.data.tokens.length)
+      // If this data is not present we have no reason to store it
+      if (!v.decimals && !v.tokenName && !v.tokenSymbol && !v.icon)
+        return console.log(`NeLegacy Check | ${padding}${i}/${res.data.tokens.length} | No Metadata. Skipping.`)
       
-  //     // We only want to do the legacy check if the token is still legacy.
-  //     // we dont want a situation where the metaplex endpoint is down on the
-  //     // run so it starts marking non legacy tokens as legacy.
-  //     const og = tokens.get(v.mintAddress) ?? { dataURI: null, isLegacy: true }
-  //     if (og.isLegacy) {
-  //       // Check if it is legacy by attempting to request metaplex data url.
-  //       const result = await Result.fromAsync(metaplex.nfts().findByMint({
-  //         'mintAddress': new PublicKey(v.mintAddress)
-  //       }).run())
-  //       if (result.isOk()) og.dataURI = result.unwrap().uri
-  //       og.isLegacy = og.dataURI ? false : true
-  //     }
+      // We only want to do the legacy check if the token is still legacy.
+      // we dont want a situation where the metaplex endpoint is down on the
+      // run so it starts marking non legacy tokens as legacy.
+      const og = tokens.get(v.mintAddress) ?? { dataURI: null, isLegacy: true }
+      if (og.isLegacy) {
+        // Check if it is legacy by attempting to request metaplex data url.
+        const result = await Result.fromAsync(metaplex.nfts().findByMint({
+          'mintAddress': new PublicKey(v.mintAddress)
+        }).run())
+        if (result.isOk()) og.dataURI = result.unwrap().uri
+        og.isLegacy = og.dataURI ? false : true
+      }
 
-  //     console.log(`NeLegacy Check | ${padding}${i}/${res.data.tokens.length} | ${og.isLegacy}`)
+      console.log(`NeLegacy Check | ${padding}${i}/${res.data.tokens.length} | ${og.isLegacy}`)
 
-  //     tokens.set(v.mintAddress, {
-  //       chainId: 101,
-  //       address: v.mintAddress,
-  //       symbol: v.tokenSymbol,
-  //       name: v.tokenName,
-  //       decimals: v.decimals,
-  //       logoURI: v.icon,
-  //       dataURI: og.dataURI,
-  //       tags: v.tag ?? [],
-  //       extensions: v.extensions ?? {},
-  //       createdAt: v.createdAt,
-  //       isLegacy: og.isLegacy,
-  //     })
+      tokens.set(v.mintAddress, {
+        chainId: 101,
+        address: v.mintAddress,
+        symbol: v.tokenSymbol,
+        name: v.tokenName,
+        decimals: v.decimals,
+        logoURI: v.icon,
+        dataURI: og.dataURI,
+        tags: v.tag ?? [],
+        extensions: v.extensions ?? {},
+        createdAt: v.createdAt,
+        isLegacy: og.isLegacy,
+      })
 
-  //     if (solThrottle > 0)
-  //       await timeout(solThrottle)
-  //   })
+      if (solThrottle > 0)
+        await timeout(solThrottle)
+    })
 
-  //   // If solscan throttle is more than 0 then wait until next request
-  //   if (ssThrottle > 0)
-  //     await timeout(ssThrottle)
-  // }
+    // If solscan throttle is more than 0 then wait until next request
+    if (ssThrottle > 0)
+      await timeout(ssThrottle)
+  }
 
-  // db.set('tokens', Array.from(tokens.values()))
-  // console.log(`Program Finish | Updated ${tokens.size} Tokens | Saving DB`)
-  // db.save()
+  db.set('tokens', Array.from(tokens.values()))
+  console.log(`Program Finish | Updated ${tokens.size} Tokens | Saving DB`)
+  db.save()
 }
 
 // !Invoke
@@ -187,6 +186,6 @@ main()
     core.setFailed(String(err))
   })
   .finally(() => {
-    // stopStopwatch()
+    stopStopwatch()
     process.exit(0)
   })
