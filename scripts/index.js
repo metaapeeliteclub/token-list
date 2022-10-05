@@ -15,7 +15,7 @@ const pathToListFile = './token-list.json'
 // No need for a solscan throttle when metaplex throttles it through legacy check
 const ssThrottle = 0
 // From our understanding genesysgo is 200 rps so this threshold should be fine
-const solThrottle = 300
+const solThrottle = 180
 const listFile = path.resolve(__dirname, pathToListFile)
 
 // !Database
