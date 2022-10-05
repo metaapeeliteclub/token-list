@@ -12,8 +12,9 @@ const { Result } = require('@sapphire/result')
 // !Constants
 const rpcUrl = 'https://ssc-dao.genesysgo.net/'
 const pathToListFile = './token-list.json'
-const ssThrottle = 100
-const solThrottle = 200
+// No need for a solscan throttle when metaplex throttles it through legacy check
+const ssThrottle = 0
+const solThrottle = 300
 const listFile = path.resolve(__dirname, pathToListFile)
 
 // !Database
@@ -134,13 +135,21 @@ async function main() {
       if (!v.decimals && !v.tokenName && !v.tokenSymbol && !v.icon)
         return console.log(`NeLegacy Check | ${padding}${i}/${res.data.tokens.length} | No Metadata. Skipping.`)
       
-      // Check if it is legacy by attempting to request metaplex data url.
-      const result = await Result.fromAsync(metaplex.nfts().findByMint({
-        'mintAddress': new PublicKey(v.mintAddress)
-      }).run())
-      const legacy = result.isErr()
+      // We only want to do the legacy check if the token is still legacy.
+      // we dont want a situation where the metaplex endpoint is down on the
+      // run so it starts marking non legacy tokens as legacy.
+      const og = tokens.get(v.mintAddress)
+      if (og.isLegacy) {
+        // Check if it is legacy by attempting to request metaplex data url.
+        const result = await Result.fromAsync(metaplex.nfts().findByMint({
+          'mintAddress': new PublicKey(v.mintAddress)
+        }).run())
+        let dataURI = null
+        if (result.isOk()) og.dataURI = result.unwrap().uri
+        og.isLegacy = dataURI ? false : true
+      }
 
-      console.log(`NeLegacy Check | ${padding}${i}/${res.data.tokens.length} | ${legacy}`)
+      console.log(`NeLegacy Check | ${padding}${i}/${res.data.tokens.length} | ${isLegacy}`)
 
       tokens.set(v.mintAddress, {
         chainId: 101,
@@ -149,10 +158,11 @@ async function main() {
         name: v.tokenName,
         decimals: v.decimals,
         logoURI: v.icon,
+        dataURI: og.dataURI,
         tags: v.tag ?? [],
         extensions: v.extensions ?? {},
         createdAt: v.createdAt,
-        isLegacy: legacy
+        isLegacy: og.isLegacy,
       })
 
       if (solThrottle > 0)
