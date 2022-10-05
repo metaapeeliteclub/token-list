@@ -1,0 +1,37 @@
+name: Update Token List
+
+env:
+  TOKEN_FILE: ./token-list.json
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  update:
+    name: Update Token List To Solflare Spec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+          
+      - name: Install Deps
+        run: npm ci
+
+      - name: Fetch & Update Resources
+        run: node .
+        with:
+          file-path: ${{ env.TOKEN_FILE }}
+          rpc-url: https://ssc-dao.genesysgo.net/
+          ss-throttle: 100
+          sol-throttle: 200
+
+      - name: Commit Changes
+        uses: test-room-7/action-update-file@v1
+        with:
+          file-path: ${{ env.TOKEN_FILE }}
+          commit-msg: Daily List Update
+          github-token: ${{ secrets.GITHUB_TOKEN }}
