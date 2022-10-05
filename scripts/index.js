@@ -15,7 +15,7 @@ const pathToListFile = './token-list.json'
 // No need for a solscan throttle when metaplex throttles it through legacy check
 const ssThrottle = 0
 // From our understanding genesysgo is 200 rps so this threshold should be fine
-const solThrottle = 6
+const solThrottle = 80
 const listFile = path.resolve(__dirname, pathToListFile)
 
 // !Database
@@ -150,7 +150,7 @@ async function main() {
         og.isLegacy = dataURI ? false : true
       }
 
-      console.log(`NeLegacy Check | ${padding}${i}/${res.data.tokens.length} | ${isLegacy}`)
+      console.log(`NeLegacy Check | ${padding}${i}/${res.data.tokens.length} | ${og.isLegacy}`)
 
       tokens.set(v.mintAddress, {
         chainId: 101,
