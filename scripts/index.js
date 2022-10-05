@@ -10,14 +10,10 @@ const { Metaplex } = require('@metaplex-foundation/js')
 const { Result } = require('@sapphire/result')
 
 // !Constants
-const rpcUrl = core.getInput('rpc-url')
-  || 'https://ssc-dao.genesysgo.net/'
-const pathToListFile = core.getInput('file-path') 
-  || './token-list.json'
-const ssThrottle = parseInt(core.getInput('ss-throttle'))
-  || 100
-const solThrottle = parseInt(core.getInput('sol-throttle'))
-  || 200
+const rpcUrl = 'https://ssc-dao.genesysgo.net/'
+const pathToListFile = './token-list.json'
+const ssThrottle = 100
+const solThrottle = 200
 const listFile = path.resolve(__dirname, pathToListFile)
 
 // !Database

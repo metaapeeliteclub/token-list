@@ -1,8 +1,5 @@
 name: Update Token List
 
-env:
-  TOKEN_FILE: ./token-list.json
-
 on:
   schedule:
     - cron: '0 0 * * *'
@@ -25,15 +22,10 @@ jobs:
 
       - name: Fetch & Update Resources
         run: node .
-        with:
-          file-path: ${{ env.TOKEN_FILE }}
-          rpc-url: https://ssc-dao.genesysgo.net/
-          ss-throttle: 100
-          sol-throttle: 200
 
       - name: Commit Changes
         uses: test-room-7/action-update-file@v1
         with:
-          file-path: ${{ env.TOKEN_FILE }}
+          file-path: ./token-list.json
           commit-msg: Daily List Update
           github-token: ${{ secrets.GITHUB_TOKEN }}
