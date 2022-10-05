@@ -182,10 +182,8 @@ async function main() {
 // !Invoke
 main()
   .catch((err) => {
+    stopStopwatch()
     console.error(err)
     core.setFailed(String(err))
-  })
-  .finally(() => {
-    stopStopwatch()
     process.exit(0)
   })
