@@ -115,19 +115,22 @@ async function main() {
   )
 
   // While tokens collected len is less than total amount we keep requesting.
-  while (tokens.size < tokenAmt) {
+  let curOffset = 0
+  while (curOffset < tokenAmt) {
     // Log current fetch progress.
-    const padding = pad(tokens.size, tokenAmt)
-    console.log(`Fetch Progress | ${padding}${tokens.size}/${tokenAmt}`)
+    const padding = pad(curOffset, tokenAmt)
+    console.log(`Fetch Progress | ${padding}${curOffset}/${tokenAmt}`)
                //NeLegacy Check 
     // Make request using current collected tokens as offset.
-    const res = await solscan.getSfts(tokens.size)
+    const res = await solscan.getSfts(curOffset)
 
     // Once again if not "succcess" assuming not good.
     if (!data.succcess)
       throw new Error(`Program Failed : request offset ${
-        tokens.size
+        curOffset
       } success status negated.`)
+
+    curOffset += res.data.tokens.length
 
     // Push tokens to total collection.
     await asyncForEach(res.data.tokens, async (v, i) => {
