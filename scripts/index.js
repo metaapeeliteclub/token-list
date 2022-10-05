@@ -145,9 +145,8 @@ async function main() {
         const result = await Result.fromAsync(metaplex.nfts().findByMint({
           'mintAddress': new PublicKey(v.mintAddress)
         }).run())
-        let dataURI = null
         if (result.isOk()) og.dataURI = result.unwrap().uri
-        og.isLegacy = dataURI ? false : true
+        og.isLegacy = og.dataURI ? false : true
       }
 
       console.log(`NeLegacy Check | ${padding}${i}/${res.data.tokens.length} | ${og.isLegacy}`)
