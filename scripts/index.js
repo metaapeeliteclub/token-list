@@ -139,7 +139,7 @@ async function main() {
       // We only want to do the legacy check if the token is still legacy.
       // we dont want a situation where the metaplex endpoint is down on the
       // run so it starts marking non legacy tokens as legacy.
-      const og = tokens.get(v.mintAddress)
+      const og = tokens.get(v.mintAddress) ?? { dataURI: null, isLegacy: true }
       if (og.isLegacy) {
         // Check if it is legacy by attempting to request metaplex data url.
         const result = await Result.fromAsync(metaplex.nfts().findByMint({

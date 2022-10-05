@@ -26,6 +26,6 @@ jobs:
       - name: Commit Changes
         uses: test-room-7/action-update-file@v1
         with:
-          file-path: ./token-list.json
+          file-path: token-list.json
           commit-msg: Daily List Update
           github-token: ${{ secrets.GITHUB_TOKEN }}
